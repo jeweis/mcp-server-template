@@ -93,7 +93,7 @@ python server.py
 ### 使用uvx安装并运行（推荐）
 
 ```bash
-uvx --from mcp-server-template
+uvx mcp-server-template
 ```
 
 

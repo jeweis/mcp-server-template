@@ -18,7 +18,7 @@ class Config:
     PORT = int(os.getenv("PORT", 9087))
     CONTEXT_PATH = os.getenv("CONTEXT_PATH", "")
     # 服务器配置
-    SERVER_NAME = os.getenv("SERVER_NAME", "Jewei-MCP-Server")
+    SERVER_NAME = os.getenv("SERVER_NAME", "My-MCP-Server")
 
 # 创建默认配置实例
 config = Config()

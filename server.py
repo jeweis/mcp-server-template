@@ -7,7 +7,6 @@ from fastmcp import FastMCP
 
 from src.app_config import config
 from src.core import helloworld
-import httpx
 
 # 创建MCP服务器实例
 mcp = FastMCP(name=config.SERVER_NAME)
