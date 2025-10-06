@@ -1,0 +1,32 @@
+# server.py
+"""
+MCP服务器主模块，提供openapi2mcp功能
+"""
+
+from fastmcp import FastMCP
+
+from mcpserver.app_config import config
+from mcpserver.core import helloworld
+import httpx
+
+# 创建MCP服务器实例
+mcp = FastMCP(name=config.SERVER_NAME)
+
+@mcp.tool
+def echo_tool(text: str) -> str:
+    """Echo the input text"""
+    return helloworld(text)
+
+
+def main():
+    """主函数，用于启动mcp服务器"""
+    print("启动 MCP 服务器...")
+    if config.TYPE=="streamable-http":
+        mcp.run(transport="streamable-http", host="0.0.0.0", port=config.PORT,path=config.CONTEXT_PATH)
+    elif config.TYPE=="sse":
+        mcp.run(transport="sse", host="0.0.0.0", port=config.PORT,path=config.CONTEXT_PATH)
+    else:
+        mcp.run()
+
+if __name__ == "__main__":
+    main()
