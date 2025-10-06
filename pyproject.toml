@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jewei-mcp-server-template"
-version = "0.10.6.0630"
+version = "0.10.6.0847"
 authors = [
     {name = "Jewei", email = "jiweifong@qq.com"}
 ]
