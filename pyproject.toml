@@ -27,7 +27,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/jeweis/mcp-server-template/issues"
 
 [project.scripts]
-mcp_server_template = "server:main"
+mcp-server-template = "server:main"
 
 [tool.setuptools]
-packages = ["mcp_server_template"]
+packages = ["mcp-server-template"]
