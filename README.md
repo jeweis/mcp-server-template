@@ -85,6 +85,11 @@ TYPE=streamable-http
 
 ### 运行
 
+### 运行命令
+```bash
+python server.py
+```
+
 ### 使用uvx安装并运行（推荐）
 
 ```bash
