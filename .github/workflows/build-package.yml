@@ -7,7 +7,7 @@ on:
     tags:
       - 'v*.*.*'  # 只在推送版本标签时触发
     branches:
-      - 'master'  # 或者在推送到 master 时触发
+      - 'main'  # 或者在推送到 main 时触发
 
 jobs:
   deploy:
