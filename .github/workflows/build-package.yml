@@ -8,6 +8,9 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
+permissions:
+  contents: write  # 添加写入权限
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # 获取完整的 git 历史，用于版本计算
+        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -33,20 +36,14 @@ jobs:
         PACKAGE_NAME=$(grep -Po '(?<=name = ")[^"]*' pyproject.toml)
         echo "Package name: $PACKAGE_NAME"
         
-        # 尝试从 PyPI 获取最新版本
         LATEST_VERSION=$(pip index versions "$PACKAGE_NAME" 2>/dev/null | grep -Po '(?<=Available versions: )[^,]*' || echo "0.0.0")
         echo "Latest PyPI version: $LATEST_VERSION"
         
         if [[ $GITHUB_REF == refs/tags/v* ]]; then
-          # 如果是标签推送，使用标签版本
           VERSION="${GITHUB_REF#refs/tags/v}"
         else
-          # 自动递增版本号
           IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-          # 去除可能的预发布版本号
           PATCH=$(echo "$PATCH" | grep -Po '^\d+')
-          
-          # 递增 patch 版本
           NEW_PATCH=$((PATCH + 1))
           VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
         fi
@@ -79,5 +76,3 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag -a "v${VERSION}" -m "Release version ${VERSION}"
         git push origin "v${VERSION}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
