@@ -1,8 +1,11 @@
 name: Build and upload python package
 
 on:
-  release:
-    types: [created]
+  # 手动触发
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
 
 jobs:
   deploy:
