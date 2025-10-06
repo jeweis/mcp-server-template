@@ -2,7 +2,7 @@
 
 这是一个MCP Server 项目模板，提供了以下功能：
 
-- 示例提供了工具echo_tool
+- 示例提供了工具hello_word_tool
 
 
 ## MCP 使用配置

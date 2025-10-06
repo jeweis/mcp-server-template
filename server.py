@@ -12,9 +12,9 @@ from src.core import helloworld
 mcp = FastMCP(name=config.SERVER_NAME)
 
 @mcp.tool
-def echo_tool(text: str) -> str:
-    """Echo the input text"""
-    return helloworld(text)
+def hello_word_tool(name: str) -> str:
+    """Hello world tool that echoes the input name"""
+    return helloworld(name)
 
 
 def main():
