@@ -41,3 +41,6 @@
 - 主入口点在 `server.py`
 - 配置在 `src/app_config.py`
 - 核心逻辑在 `src/core.py`
+
+## AI注意事项
+1. 请始终输出中文
