@@ -8,17 +8,12 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
-permissions:
-  contents: write  # 添加写入权限
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -28,34 +23,36 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build twine packaging
+        pip install build twine
     
-    - name: Get latest PyPI version and calculate new version
+    - name: Generate version number
       id: get_version
       run: |
-        PACKAGE_NAME=$(grep -Po '(?<=name = ")[^"]*' pyproject.toml)
-        echo "Package name: $PACKAGE_NAME"
-        
-        LATEST_VERSION=$(pip index versions "$PACKAGE_NAME" 2>/dev/null | grep -Po '(?<=Available versions: )[^,]*' || echo "0.0.0")
-        echo "Latest PyPI version: $LATEST_VERSION"
-        
         if [[ $GITHUB_REF == refs/tags/v* ]]; then
+          # 如果是标签推送，使用标签版本
           VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Using tag version: $VERSION"
         else
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-          PATCH=$(echo "$PATCH" | grep -Po '^\d+')
-          NEW_PATCH=$((PATCH + 1))
-          VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          # 基于 2025 年的日期版本号 + 构建号
+          BASE_YEAR=2025
+          CURRENT_YEAR=$(date +%Y)
+          CURRENT_MONTH=$(date +%-m)  # 去掉前导零
+          CURRENT_DAY=$(date +%-d)    # 去掉前导零
+          BUILD_NUMBER=$(date +%H%M)  # 小时分钟作为构建号
+          
+          YEAR_OFFSET=$((CURRENT_YEAR - BASE_YEAR))
+          
+          VERSION="${YEAR_OFFSET}.${CURRENT_MONTH}.${CURRENT_DAY}.${BUILD_NUMBER}"
+          echo "Generated version: $VERSION"
         fi
-        
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "New version will be: $VERSION"
+        echo "Building version: $VERSION"
     
     - name: Update version in pyproject.toml
       run: |
         VERSION="${{ steps.get_version.outputs.VERSION }}"
         sed -i "s|version = \"[^\"]*\"|version = \"${VERSION}\"|" pyproject.toml
-        echo "Updated pyproject.toml:"
+        echo "Updated pyproject.toml version:"
         cat pyproject.toml | grep version
     
     - name: Build package
@@ -67,12 +64,3 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         twine upload dist/*
-    
-    - name: Create and push git tag
-      if: github.ref == 'refs/heads/main'
-      run: |
-        VERSION="${{ steps.get_version.outputs.VERSION }}"
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "v${VERSION}" -m "Release version ${VERSION}"
-        git push origin "v${VERSION}"
