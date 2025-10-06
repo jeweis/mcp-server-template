@@ -30,4 +30,4 @@ dependencies = [
 mcp-server-template = "server:main"
 
 [tool.setuptools]
-packages = ["mcp-server-template"]
+packages = ["src"]

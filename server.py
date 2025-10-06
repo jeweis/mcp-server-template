@@ -5,8 +5,8 @@ MCP服务器主模块，提供openapi2mcp功能
 
 from fastmcp import FastMCP
 
-from mcpserver.app_config import config
-from mcpserver.core import helloworld
+from src.app_config import config
+from src.core import helloworld
 import httpx
 
 # 创建MCP服务器实例
