@@ -3,7 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-server-template"
+name = "jewei-mcp-server-template"
 version = "0.1.3"
 authors = [
     {name = "Jewei", email = "jiweifong@qq.com"}
