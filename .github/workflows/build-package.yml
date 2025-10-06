@@ -1,58 +1,83 @@
 name: Build and upload python package
 
 on:
-  # 手动触发
-  workflow_dispatch:
   push:
-    tags:
-      - 'v*.*.*'  # 只在推送版本标签时触发
     branches:
-      - 'main'  # 或者在推送到 main 时触发
+      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整的 git 历史，用于版本计算
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        cache: 'pip'
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -e .
-        pip install build twine
+        pip install build twine packaging
     
-    - name: Set package version
+    - name: Get latest PyPI version and calculate new version
+      id: get_version
       run: |
-        if [[ $GITHUB_REF == refs/tags/v* ]]; then
-          # 如果是 tag，提取版本号
-          export VERSION="${GITHUB_REF#refs/tags/v}"
-        else
-          # 如果不是 tag，使用默认版本或从文件读取
-          export VERSION=$(grep -oP '(?<=version = ")[^"]*' pyproject.toml || echo "0.0.1")
-        fi
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "Building version: $VERSION"
+        PACKAGE_NAME=$(grep -Po '(?<=name = ")[^"]*' pyproject.toml)
+        echo "Package name: $PACKAGE_NAME"
         
-        # 更新 pyproject.toml 中的版本号（如果需要）
-        sed -i "s|version = \".*\"|version = \"${VERSION}\"|" pyproject.toml
+        # 尝试从 PyPI 获取最新版本
+        LATEST_VERSION=$(pip index versions "$PACKAGE_NAME" 2>/dev/null | grep -Po '(?<=Available versions: )[^,]*' || echo "0.0.0")
+        echo "Latest PyPI version: $LATEST_VERSION"
+        
+        if [[ $GITHUB_REF == refs/tags/v* ]]; then
+          # 如果是标签推送，使用标签版本
+          VERSION="${GITHUB_REF#refs/tags/v}"
+        else
+          # 自动递增版本号
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+          # 去除可能的预发布版本号
+          PATCH=$(echo "$PATCH" | grep -Po '^\d+')
+          
+          # 递增 patch 版本
+          NEW_PATCH=$((PATCH + 1))
+          VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+        fi
+        
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "New version will be: $VERSION"
+    
+    - name: Update version in pyproject.toml
+      run: |
+        VERSION="${{ steps.get_version.outputs.VERSION }}"
+        sed -i "s|version = \"[^\"]*\"|version = \"${VERSION}\"|" pyproject.toml
+        echo "Updated pyproject.toml:"
+        cat pyproject.toml | grep version
     
     - name: Build package
-      run: |
-        python -m build
+      run: python -m build
     
     - name: Publish to PyPI
-      # 只在推送 tag 时发布到 PyPI
-      if: startsWith(github.ref, 'refs/tags/v')
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         twine upload dist/*
+    
+    - name: Create and push git tag
+      if: github.ref == 'refs/heads/main'
+      run: |
+        VERSION="${{ steps.get_version.outputs.VERSION }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "v${VERSION}" -m "Release version ${VERSION}"
+        git push origin "v${VERSION}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
