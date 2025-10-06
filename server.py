@@ -1,6 +1,6 @@
 # server.py
 """
-MCP服务器主模块，提供openapi2mcp功能
+MCP服务器主模块，各种 mcp 工具入口
 """
 
 from fastmcp import FastMCP

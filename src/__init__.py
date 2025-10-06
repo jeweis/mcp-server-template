@@ -1,5 +1,5 @@
 # __init__.py
-"""OpenAPI to MCP服务器包"""
+"""MCP服务器包"""
 
 from . import app_config
 from . import core
