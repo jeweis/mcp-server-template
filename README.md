@@ -2,12 +2,31 @@
 
 这是一个MCP Server 项目模板，提供了以下功能：
 
-- 提供了工具echo_tool
+- 示例提供了工具echo_tool
 
 
 ## MCP 使用配置
 
 本项目支持通过多种客户端配置 MCP 服务器，以便与各种 IDE 或工具集成。以下是一些常见客户端的配置示例：
+
+### Claude Code
+1. 配置文件
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-template"]
+    }
+  }
+}
+
+```
+2. cli
+```bash
+claude mcp add mcp-server-template --scope project uvx mcp-server-template
+```
 
 ### Windsurf / Cursor / Claude
 
