@@ -15,7 +15,7 @@ class Config:
 
     ## 默认stdio
     TYPE=os.getenv("TYPE","stdio")
-    PORT = os.getenv("PORT", 9087)
+    PORT = int(os.getenv("PORT", 9087))
     CONTEXT_PATH = os.getenv("CONTEXT_PATH", "")
     # 服务器配置
     SERVER_NAME = os.getenv("SERVER_NAME", "Jewei-MCP-Server")
